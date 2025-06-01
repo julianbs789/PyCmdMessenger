@@ -166,12 +166,6 @@ void OnValuePing()
         cmdMessenger.sendCmd(kValuePong, value);
         break;
       }
-      case kString:   
-      {   
-        char * value = cmdMessenger.readStringArg();
-        cmdMessenger.sendCmd(kValuePong, value);
-        break;
-      }
       // Binary values
       case kBBool:
       {
@@ -214,7 +208,8 @@ void OnValuePing()
       }
       case kBDouble:
       {
-         double value = cmdMessenger.readBinArg<double>();
+         // // RP2040 uses 8-byte float, classic arduino uses 4
+         uint32_t value = cmdMessenger.readBinArg<uint32_t>();
          cmdMessenger.sendBinCmd(kValuePong, value);
          break;
       }
@@ -232,12 +227,13 @@ void OnValuePing()
          cmdMessenger.sendBinCmd(kValuePong, value);
          break;
       }
+      case kString:
       case kEscString:   
       {   
-        char * value = cmdMessenger.readStringArg();
-        cmdMessenger.unescape(value);
+        const char * value = cmdMessenger.readStringArg();
+        // cmdMessenger.unescape(value); already escaped!?
         cmdMessenger.sendCmdStart(kValuePong);
-        cmdMessenger.sendCmdEscArg(value);
+        cmdMessenger.sendCmdEscArg((char*)value);
         cmdMessenger.sendCmdEnd();
         break;
       }
@@ -250,8 +246,9 @@ void OnValuePing()
 void OnMultiValuePing()
 {  
    int16_t valueInt16 = cmdMessenger.readBinArg<int16_t>();  
-   int32_t valueInt32 = cmdMessenger.readBinArg<int32_t>();  
-   double valueDouble = cmdMessenger.readBinArg<double>();
+   int32_t valueInt32 = cmdMessenger.readBinArg<int32_t>();
+   // RP2040 uses 8-byte float, classic arduino uses 4
+   uint32_t valueDouble = cmdMessenger.readBinArg<uint32_t>();
    
    cmdMessenger.sendCmdStart(kMultiValuePong);
    cmdMessenger.sendCmdBinArg(valueInt16);
